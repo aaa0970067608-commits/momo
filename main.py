@@ -5,7 +5,7 @@ import asyncio
 import os
 from datetime import datetime
 from pathlib import Path
-from playwright.sync_api import sync_playwright
+from playwright.async_api import async_playwright
 import aiohttp
 
 DISCORD_WEBHOOK_URL = os.environ["DISCORD_WEBHOOK_URL"]
@@ -30,9 +30,9 @@ def get_random_ua():
     ]
     return random.choice(agents)
 
-def scrape_momo_price(url, page):
-    page.goto(url, wait_until="domcontentloaded", timeout=30000)
-    page.wait_for_selector('meta[property="product:price:amount"]', state="attached", timeout=15000)
+async def scrape_momo_price(url, page):
+    await page.goto(url, wait_until="domcontentloaded", timeout=30000)
+    await page.wait_for_selector('meta[property="product:price:amount"]', state="attached", timeout=15000)
     def get_meta(prop):
         el = page.query_selector(f'meta[property="{prop}"]')
         return el.get_attribute("content").strip() if el else ""
@@ -95,25 +95,25 @@ async def send_discord(results):
 async def main():
     history = load_lowest()
     results = []
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        context = browser.new_context(user_agent=get_random_ua())
-        def block_images(route, req):
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=True)
+        context = await browser.new_context(user_agent=get_random_ua())
+        async def block_images(route, req):
             if req.resource_type == "image":
-                route.abort()
+                await route.abort()
             else:
-                route.continue_()
-        context.route("**/*", block_images)
-        page = context.new_page()
+                await route.continue_()
+        await context.route("**/*", block_images)
+        page = await context.new_page()
         for i, url in enumerate(MOMO_URLS, 1):
             print(f"\n{'='*50}")
             print(f"🔍 [{i}/{len(MOMO_URLS)}] 抓取中... {url}")
-            data = scrape_momo_price(url, page)
+            data = await scrape_momo_price(url, page)
             lowest_price, diff = update_lowest(history, data)
             results.append({**data, "lowest": lowest_price, "diff": diff})
             print(f"📦 {data['title']}")
             print(f"💰 今日：{data['price']} TWD｜🏆 最低：{lowest_price} TWD｜差：{diff:+d}")
-        browser.close()
+        await browser.close()
     print(f"\n{'='*50}")
     print("📤 推送到 Discord...")
     await send_discord(results)
