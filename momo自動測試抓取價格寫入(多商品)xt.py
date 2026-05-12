@@ -8,7 +8,7 @@ from playwright.sync_api import sync_playwright, Page
 import aiohttp
 
 # ── 設定區 ──────────────────────────────────────────────
-DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/你的webhook網址"
+DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1503570767361605673/peezipLnr0Xl3lAjE4UjleI49C1WbrqSZ3g5uxYcr6SCVNeafo2cYPEPCdONhu0MCXpb"
 
 MOMO_URLS = [
     "https://www.momoshop.com.tw/goods/GoodsDetail.jsp?i_code=10228197",  # 舒潔衛生紙
