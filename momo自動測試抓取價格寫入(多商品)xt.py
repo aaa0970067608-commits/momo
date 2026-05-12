@@ -21,7 +21,7 @@ MOMO_URLS = [
     "https://www.momoshop.com.tw/goods/GoodsDetail.jsp?i_code=9244191",   # BHK's紅麴
 ]
 
-LOWEST_JSON = Path(__file__).parent / "lowest.json"
+LOWEST_JSON = Path("lowest.json")
 MAX_HISTORY = 5  # 每商品保留最低幾筆
 
 # ── 隨機 UA ─────────────────────────────────────────────
