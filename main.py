@@ -97,4 +97,4 @@ async def send_discord(results):
 async def main():
     history = load_lowest()
     results = []
-    with sync_playwright()
+    with sync_playwright() as p:
