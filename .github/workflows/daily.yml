@@ -36,12 +36,13 @@ jobs:
       - name: 安裝套件
         run: pip install playwright aiohttp
 
-      - name: 安裝 Chromium（首次才裝）
+      - name: 安裝 Chromium
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: |
-          playwright install chromium
-          playwright install-deps chromium
+        run: playwright install chromium
 
+      - name: 安裝系統依賴（每次都裝）
+        run: playwright install-deps chromium
+     
       - name: 執行爬蟲
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
