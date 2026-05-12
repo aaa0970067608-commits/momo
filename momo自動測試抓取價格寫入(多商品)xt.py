@@ -50,22 +50,14 @@ def scrape_momo_price(url: str, page: Page) -> dict:
         "url":      url,
     }
 
-# ── JSON 歷史最低價 ──────────────────────────────────────
-def load_lowest() -> dict:
-    if LOWEST_JSON.exists():
-        return json.loads(LOWEST_JSON.read_text(encoding="utf-8"))
-    return {}
-
 def update_lowest(history: dict, data: dict) -> tuple[int, int]:
     """
     更新 JSON，回傳 (歷史最低價, 價差)
     """
     key = data["url"]
     records: list[dict] = history.get(key, [])
-
     # 加入今日資料
     records.append({"date": data["date"], "price": data["price"]})
-
     # 依價格排序，只保留最低 MAX_HISTORY 筆
     records = sorted(records, key=lambda x: x["price"])[:MAX_HISTORY]
     history[key] = records
