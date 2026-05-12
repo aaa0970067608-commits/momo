@@ -1,0 +1,38 @@
+name: momo每日價格追蹤
+
+on:
+  schedule:
+    - cron: '0 1 * * *'  # 台灣時間早上9點（UTC+8，所以UTC是1點）
+  workflow_dispatch:       # 手動觸發按鈕
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: 設定 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 安裝套件
+        run: |
+          pip install playwright aiohttp
+          playwright install chromium
+          playwright install-deps chromium
+
+      - name: 執行爬蟲
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: python main.py
+
+      - name: 儲存 lowest.json 回 Repo
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add lowest.json
+          git diff --staged --quiet || git commit -m "update lowest.json"
+          git push
