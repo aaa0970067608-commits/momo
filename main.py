@@ -31,8 +31,13 @@ def get_random_ua():
     return random.choice(agents)
 
 async def scrape_momo_price(url, page):
-    await page.goto(url, wait_until="domcontentloaded", timeout=30000)
-    await page.wait_for_selector('meta[property="product:price:amount"]', state="attached", timeout=15000)
+    await page.set_extra_http_headers({
+        "Accept-Language": "zh-TW,zh;q=0.9,en;q=0.8",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Referer": "https://www.momoshop.com.tw/",
+    })
+    await page.goto(url, wait_until="domcontentloaded", timeout=60000)
+    await page.wait_for_selector('meta[property="product:price:amount"]', state="attached", timeout=20000)
     def get_meta(prop):
         el = page.query_selector(f'meta[property="{prop}"]')
         return el.get_attribute("content").strip() if el else ""
@@ -96,8 +101,16 @@ async def main():
     history = load_lowest()
     results = []
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
-        context = await browser.new_context(user_agent=get_random_ua())
+        browser = await p.chromium.launch(
+            headless=True,
+            args=["--no-sandbox", "--disable-blink-features=AutomationControlled"]
+        )
+        context = await browser.new_context(
+            user_agent=get_random_ua(),
+            locale="zh-TW",
+            timezone_id="Asia/Taipei",
+            viewport={"width": 1280, "height": 800},
+        )
         async def block_images(route, req):
             if req.resource_type == "image":
                 await route.abort()
