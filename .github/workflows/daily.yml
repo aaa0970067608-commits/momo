@@ -46,7 +46,7 @@ jobs:
       - name: 執行爬蟲
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-        run: python main.py
+        run: python main.py 2>&1
 
       - name: 儲存 lowest.json 回 Repo
         run: |
