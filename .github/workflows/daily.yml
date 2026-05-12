@@ -27,7 +27,7 @@ jobs:
       - name: 執行爬蟲
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-        run: python "momo自動測試抓取價格寫入（多商品）xt.py"
+        run: python main.py
 
       - name: 儲存 lowest.json 回 Repo
         run: |
