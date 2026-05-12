@@ -2,8 +2,8 @@ name: momo每日價格追蹤
 
 on:
   schedule:
-    - cron: '0 1 * * *'  # 台灣時間早上9點（UTC+8，所以UTC是1點）
-  workflow_dispatch:       # 手動觸發按鈕
+    - cron: '0 1 * * *'
+  workflow_dispatch:
 
 jobs:
   scrape:
@@ -18,9 +18,25 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: 快取 pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-playwright-aiohttp
+
+      - name: 快取 Playwright
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-1217
+
       - name: 安裝套件
+        run: pip install playwright aiohttp
+
+      - name: 安裝 Chromium（首次才裝）
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: |
-          pip install playwright aiohttp
           playwright install chromium
           playwright install-deps chromium
 
