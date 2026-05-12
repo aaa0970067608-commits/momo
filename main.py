@@ -38,14 +38,16 @@ async def scrape_momo_price(url, page):
     })
     await page.goto(url, wait_until="domcontentloaded", timeout=60000)
     await page.wait_for_selector('meta[property="product:price:amount"]', state="attached", timeout=20000)
-    def get_meta(prop):
-        el = page.query_selector(f'meta[property="{prop}"]')
-        return el.get_attribute("content").strip() if el else ""
+
+    async def get_meta(prop):
+        el = await page.query_selector(f'meta[property="{prop}"]')
+        return (await el.get_attribute("content")).strip() if el else ""
+
     return {
         "date": datetime.now().strftime("%Y-%m-%d"),
-        "title": get_meta("og:title"),
-        "price": int(get_meta("product:price:amount")),
-        "currency": get_meta("product:price:currency"),
+        "title": await get_meta("og:title"),
+        "price": int(await get_meta("product:price:amount")),
+        "currency": await get_meta("product:price:currency"),
         "url": url,
     }
 
