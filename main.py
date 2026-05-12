@@ -9,16 +9,10 @@ from playwright.async_api import async_playwright
 import aiohttp
 
 DISCORD_WEBHOOK_URL = os.environ["DISCORD_WEBHOOK_URL"]
-MOMO_URLS = [
-    "https://www.momoshop.com.tw/goods/GoodsDetail.jsp?i_code=10228197",
-    "https://www.momoshop.com.tw/goods/GoodsDetail.jsp?i_code=8084433",
-    "https://www.momoshop.com.tw/goods/GoodsDetail.jsp?i_code=11236766",
-    "https://www.momoshop.com.tw/goods/GoodsDetail.jsp?i_code=8391956",
-    "https://www.momoshop.com.tw/goods/GoodsDetail.jsp?i_code=10893852",
-    "https://www.momoshop.com.tw/goods/GoodsDetail.jsp?i_code=9920508",
-    "https://www.momoshop.com.tw/goods/GoodsDetail.jsp?i_code=9884553",
-    "https://www.momoshop.com.tw/goods/GoodsDetail.jsp?i_code=9244191",
-]
+
+with open("urls.txt", encoding="utf-8") as f:
+    MOMO_URLS = [line.strip() for line in f if line.strip()]
+
 LOWEST_JSON = Path("lowest.json")
 MAX_HISTORY = 5
 
