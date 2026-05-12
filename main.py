@@ -30,7 +30,8 @@ def get_random_ua():
     ]
     return random.choice(agents)
 
-async def scrape_momo_price(url, page):
+async def scrape_momo_price(url,     
+    await asyncio.sleep(random.uniform(3, 6))
     await page.set_extra_http_headers({
         "Accept-Language": "zh-TW,zh;q=0.9,en;q=0.8",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
