@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 設定 Python
         uses: actions/setup-python@v5
@@ -49,8 +51,6 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git fetch origin
-          git reset --soft origin/main
           git add lowest.json
           git diff --staged --quiet || git commit -m "update lowest.json"
-          git push
+          git push origin HEAD:main
