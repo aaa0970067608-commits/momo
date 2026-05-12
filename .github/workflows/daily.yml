@@ -40,9 +40,10 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: playwright install chromium
 
-      - name: 安裝系統依賴（每次都裝）
+      - name: 安裝系統依賴（首次才裝）
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: playwright install-deps chromium
-     
+
       - name: 執行爬蟲
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
