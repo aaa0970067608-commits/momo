@@ -27,7 +27,7 @@ def get_random_ua():
 async def scrape_momo_price(url, context):
     await asyncio.sleep(random.uniform(3, 6))
     for attempt in range(3):
-        
+    page = await context.new_page()     
         try:
             await page.set_extra_http_headers({
                 "Accept-Language": "zh-TW,zh;q=0.9,en;q=0.8",
@@ -126,7 +126,6 @@ async def main():
             else:
                 await route.continue_()
         await context.route("**/*", block_images)
-        page = await context.new_page()
         for i, url in enumerate(MOMO_URLS, 1):
             print(f"\n{'='*50}")
             print(f"🔍 [{i}/{len(MOMO_URLS)}] 抓取中... {url}")
