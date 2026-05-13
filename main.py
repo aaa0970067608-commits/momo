@@ -24,27 +24,35 @@ def get_random_ua():
     ]
     return random.choice(agents)
 
-async def scrape_momo_price(url, page):   
+async def scrape_momo_price(url, page):
     await asyncio.sleep(random.uniform(3, 6))
-    await page.set_extra_http_headers({
-        "Accept-Language": "zh-TW,zh;q=0.9,en;q=0.8",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Referer": "https://www.momoshop.com.tw/",
-    })
-    await page.goto(url, wait_until="domcontentloaded", timeout=60000)
-    await page.wait_for_selector('meta[property="product:price:amount"]', state="attached", timeout=20000)
-
-    async def get_meta(prop):
-        el = await page.query_selector(f'meta[property="{prop}"]')
-        return (await el.get_attribute("content")).strip() if el else ""
-
-    return {
-        "date": datetime.now().strftime("%Y-%m-%d"),
-        "title": await get_meta("og:title"),
-        "price": int(await get_meta("product:price:amount")),
-        "currency": await get_meta("product:price:currency"),
-        "url": url,
-    }
+    for attempt in range(3):
+        try:
+            await page.set_extra_http_headers({
+                "Accept-Language": "zh-TW,zh;q=0.9,en;q=0.8",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "Referer": "https://www.momoshop.com.tw/",
+            })
+            await page.goto(url, wait_until="domcontentloaded", timeout=60000)
+            await page.wait_for_selector('meta[property="product:price:amount"]', state="attached", timeout=20000)
+            async def get_meta(prop):
+                el = await page.query_selector(f'meta[property="{prop}"]')
+                return (await el.get_attribute("content")).strip() if el else ""
+            return {
+                "date": datetime.now().strftime("%Y-%m-%d"),
+                "title": await get_meta("og:title"),
+                "price": int(await get_meta("product:price:amount")),
+                "currency": await get_meta("product:price:currency"),
+                "url": url,
+            }
+        except Exception as e:
+            print(f"⚠️ 第{attempt+1}次失敗：{e}")
+            if attempt < 2:
+                wait = random.uniform(10, 20)
+                print(f"⏳ 等待 {wait:.0f} 秒後重試...")
+                await asyncio.sleep(wait)
+            else:
+                raise
 
 def load_lowest():
     if LOWEST_JSON.exists():
