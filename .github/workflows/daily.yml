@@ -2,7 +2,7 @@ name: momo每日價格追蹤
 
 on:
   schedule:
-    - cron: '0 3 * * *'  # 台灣時間早上11點
+    - cron: '0 4 * * *'  # 台灣時間早上12點
   workflow_dispatch:
 
 jobs:
@@ -49,11 +49,12 @@ jobs:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: python main.py 2>&1
 
-      - name: 儲存 lowest.json 回 Repo
+      - name: 儲存回 Repo
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add lowest.json
+          echo "last run: $(date)" > last_run.txt
+          git add lowest.json last_run.txt
           git diff --staged --quiet || git commit -m "update lowest.json"
           git pull --rebase origin main
           git push origin HEAD:main
