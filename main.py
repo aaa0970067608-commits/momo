@@ -24,9 +24,10 @@ def get_random_ua():
     ]
     return random.choice(agents)
 
-async def scrape_momo_price(url, page):
+async def scrape_momo_price(url, context):
     await asyncio.sleep(random.uniform(3, 6))
     for attempt in range(3):
+        
         try:
             await page.set_extra_http_headers({
                 "Accept-Language": "zh-TW,zh;q=0.9,en;q=0.8",
@@ -38,14 +39,17 @@ async def scrape_momo_price(url, page):
             async def get_meta(prop):
                 el = await page.query_selector(f'meta[property="{prop}"]')
                 return (await el.get_attribute("content")).strip() if el else ""
-            return {
+            result = {
                 "date": datetime.now().strftime("%Y-%m-%d"),
                 "title": await get_meta("og:title"),
                 "price": int(await get_meta("product:price:amount")),
                 "currency": await get_meta("product:price:currency"),
                 "url": url,
             }
+            await page.close()
+            return result
         except Exception as e:
+            await page.close()
             print(f"⚠️ 第{attempt+1}次失敗：{e}")
             if attempt < 2:
                 wait = random.uniform(10, 20)
@@ -126,7 +130,7 @@ async def main():
         for i, url in enumerate(MOMO_URLS, 1):
             print(f"\n{'='*50}")
             print(f"🔍 [{i}/{len(MOMO_URLS)}] 抓取中... {url}")
-            data = await scrape_momo_price(url, page)
+            data = await scrape_momo_price(url, context)
             lowest_price, diff = update_lowest(history, data)
             results.append({**data, "lowest": lowest_price, "diff": diff})
             print(f"📦 {data['title']}")
