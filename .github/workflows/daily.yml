@@ -2,7 +2,7 @@ name: momo每日價格追蹤
 
 on:
   schedule:
-    - cron: '0 5 * * *'  # 台灣時間下午1點
+    - cron: '0 1 * * *'  # 台灣時間早上10點
   workflow_dispatch:
 
 jobs:
