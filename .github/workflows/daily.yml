@@ -2,59 +2,51 @@ name: momo每日價格追蹤
 
 on:
   schedule:
-    - cron: '0 1 * * *'  # 台灣時間早上10點
-  workflow_dispatch:
+    - cron: '0 2 * * *'  # 台灣時間早上10點 (UTC 02:00)
+  workflow_dispatch:      # 保留手動執行的按鈕，方便測試
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
+    # 給予寫入權限，確保 git push 成功
+    permissions:
+      contents: write
 
     steps:
-      - name: Checkout
+      - name: 檢出代碼
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 設定 Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: 快取 pip
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: pip-playwright-aiohttp
+      - name: 安裝必要套件
+        run: |
+          python -m pip install --upgrade pip
+          pip install playwright aiohttp
 
-      - name: 快取 Playwright
-        uses: actions/cache@v4
-        id: playwright-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-chromium-1217
-
-      - name: 安裝套件
-        run: pip install playwright aiohttp
-
-      - name: 安裝 Chromium
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: playwright install chromium
-
-      - name: 安裝系統依賴（首次才裝）
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: playwright install-deps chromium
+      - name: 一勞永逸安裝瀏覽器 (核心關鍵)
+        # --with-deps 會自動安裝 Linux 系統缺少的函式庫
+        # 直接指定 chromium，不依賴快取，版本絕對永遠正確
+        run: playwright install chromium --with-deps
 
       - name: 執行爬蟲
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        # 加入 2>&1 確保錯誤訊息也能被完整記錄
         run: python main.py 2>&1
 
-      - name: 儲存回 Repo
+      - name: 儲存數據回 Repo (Git 自動化)
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          echo "last run: $(date)" > last_run.txt
-          git add lowest.json last_run.txt
-          git diff --staged --quiet || git commit -m "update lowest.json"
-          git pull --rebase origin main
-          git push origin HEAD:main
+          # 檢查是否有檔案變動，有才 commit
+          git add lowest.json last_run.txt || true
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -m "🤖 自動更新歷史價格 [$(date +'%Y-%m-%d %H:%M')]"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          else
+            echo "沒有資料變動，跳過更新。"
+          fi
